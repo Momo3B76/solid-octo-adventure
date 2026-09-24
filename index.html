@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3 Brasseurs — Roue de la chance</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;background:#050505;color:#fff;font-family:Arial,Helvetica,sans-serif}body{min-height:100vh;overflow-x:hidden}.app{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:18px 0;background:#070706}.panel{width:418px;height:1254px;position:relative;overflow:hidden;background:#090a09 center/cover no-repeat;border-radius:10px;box-shadow:0 20px 80px rgba(0,0,0,.65)}
+.screen{display:none;position:absolute;inset:0}.screen.active{display:block}.review{background:url('assets/panel-left-bg.jpg') center top/100% 100% no-repeat}.wheelScreen{width:415px;background:url('assets/panel-center-bg.jpg') center top/100% 100% no-repeat}.result{background:url('assets/panel-right-bg.jpg') center top/100% 100% no-repeat}
+/* Invisible hit zones sit exactly over the buttons already present in the reference artwork. */
+.hit{position:absolute;background:transparent;border:0;cursor:pointer}.reviewLink{left:31px;top:665px;width:355px;height:86px}.continue{left:31px;top:760px;width:355px;height:76px}.spinHit{left:145px;top:500px;width:125px;height:125px;border-radius:50%}.homeHit{left:48px;top:912px;width:320px;height:76px}
+/* The reference artwork is the visual base. Only the functional wheel ring is animated. */
+.wheelMask{position:absolute;left:0;top:337px;width:415px;height:450px;border-radius:50%;background:#0a0c0b;box-shadow:0 0 28px rgba(238,190,111,.10);z-index:2}.wheelRing{position:absolute;left:0;top:337px;width:415px;height:450px;z-index:3;overflow:visible;pointer-events:none}.wheelRing img{position:absolute;left:0;top:0;width:415px;height:1254px;transform-origin:207px 223px;clip-path:circle(207px at 207px 223px);transition:transform 5.5s cubic-bezier(.11,.76,.14,1);filter:drop-shadow(0 0 7px rgba(238,190,111,.42))}.wheelCenter{position:absolute;left:0;top:337px;width:415px;height:450px;z-index:4;pointer-events:none}.wheelCenter img{position:absolute;left:0;top:0;width:415px;height:1254px;clip-path:circle(65px at 207px 223px)}.pointer{position:absolute;left:191px;top:334px;width:32px;height:43px;z-index:5;clip-path:polygon(0 0,100% 0,50% 100%);background:#f2d2a5;filter:drop-shadow(0 3px 5px #000)}
+/* Dynamic result text sits over the printed text while keeping the original composition. */
+.resultDynamic{position:absolute;left:0;right:0;top:658px;text-align:center;z-index:4}.resultTitle{font-size:18px;letter-spacing:7px;font-weight:300;margin:0 0 9px}.resultPrize{font-size:37px;line-height:1.03;font-weight:900;letter-spacing:1px;text-transform:uppercase;text-shadow:0 1px 1px #000}.resultCover{position:absolute;left:55px;top:646px;width:305px;height:116px;background:rgba(7,8,7,.92);border-radius:4px;z-index:3}.resultCover.lost{height:155px}.claimCover{position:absolute;left:54px;top:779px;width:310px;height:112px;background:rgba(7,8,7,.04);z-index:3}.lostMessage{display:none;position:absolute;left:45px;top:780px;width:325px;padding:18px;border:1px solid #d8b27a;border-radius:25px;text-align:center;font-size:15px;line-height:1.5;background:rgba(7,8,7,.9);z-index:5}.result.lose .lostMessage{display:block}.result.lose .claimCover{display:none}
+@media(max-width:600px){.app{padding:0}.panel,.wheelScreen{width:100vw;height:calc(100vw * 1254 / 418);max-width:418px}.wheelScreen{height:calc(100vw * 1254 / 415)}.hit.reviewLink{left:7.4%;width:85%}.hit.continue{left:7.4%;width:85%}.wheelMask,.wheelRing,.wheelCenter{transform-origin:top left}.wheelRing img,.wheelCenter img{width:100%;height:auto}.pointer{transform:scale(calc(100vw / 415));transform-origin:top left}.resultDynamic{transform:scale(calc(100vw / 418));transform-origin:top center}.resultCover{transform:scale(calc(100vw / 418));transform-origin:top left}.lostMessage{transform:scale(calc(100vw / 418));transform-origin:top left}}
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="panel" id="panel">
+    <section class="screen review active" id="review">
+      <a class="hit reviewLink" href="https://search.google.com/local/writereview?placeid=ChIJT4SU_4Uh4UcR1AbubgSVa-Y" target="_blank" rel="noopener" aria-label="Laisser un avis Google"></a>
+      <button class="hit continue" id="continueBtn" aria-label="Continuer vers la roue"></button>
+    </section>
+
+    <section class="screen wheelScreen" id="wheelScreen">
+      <div class="wheelMask"></div>
+      <div class="wheelRing"><img id="wheelImg" src="assets/wheel-ring.png" alt=""></div>
+      <div class="wheelCenter"><img src="assets/wheel-center.png" alt=""></div>
+      <div class="pointer"></div>
+      <button class="hit spinHit" id="spinHit" aria-label="Faire tourner la roue"></button>
+    </section>
+
+    <section class="screen result" id="result">
+      <div class="resultCover"></div>
+      <div class="resultDynamic"><div class="resultTitle" id="resultTitle">VOUS AVEZ GAGNÉ</div><div class="resultPrize" id="resultPrize">BIÈRE 25 CL</div></div>
+      <div class="claimCover"></div>
+      <div class="lostMessage" id="lostMessage">Cette fois, pas de gain.<br>Merci d’avoir tenté votre chance !</div>
+      <button class="hit homeHit" id="homeHit" aria-label="Retour à l'accueil"></button>
+    </section>
+  </main>
+</div>
+<script>
+const prizes=[
+ {name:'Bière 25 cl',weight:15,win:true},
+ {name:'Boisson chaude',weight:15,win:true},
+ {name:'1 shot au choix',weight:15,win:true},
+ {name:'Remise de 5 €',weight:5,win:true},
+ {name:'Coca ou Fuze Tea',weight:20,win:true},
+ {name:'Pas de gain',weight:30,win:false}
+];
+const TAU=Math.PI*2, sector=TAU/6;
+let rotation=0,spinning=false;
+function weightedPick(){let total=prizes.reduce((s,p)=>s+p.weight,0),x=Math.random()*total;for(let i=0;i<prizes.length;i++){x-=prizes[i].weight;if(x<0)return i}return 5}
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function spin(){
+ if(spinning||localStorage.getItem('3b_played')==='1')return;
+ spinning=true;
+ const idx=weightedPick();
+ const current=((rotation%TAU)+TAU)%TAU;
+ const sectorCenter=-Math.PI/2+(idx+.5)*sector;
+ const target=-sectorCenter;
+ let delta=target-current;while(delta<0)delta+=TAU;
+ rotation+=TAU*7+delta;
+ document.getElementById('wheelImg').style.transform=`rotate(${rotation}rad)`;
+ setTimeout(()=>{
+   localStorage.setItem('3b_played','1');
+   const p=prizes[idx];
+   document.getElementById('resultTitle').textContent=p.win?'VOUS AVEZ GAGNÉ':'DOMMAGE…';
+   document.getElementById('resultPrize').textContent=p.name.toUpperCase();
+   document.getElementById('result').classList.toggle('lose',!p.win);
+   show('result');spinning=false;
+ },5600)
+}
+document.getElementById('continueBtn').onclick=()=>show('wheel');
+document.getElementById('spinHit').onclick=spin;
+document.getElementById('homeHit').onclick=()=>show('review');
+</script>
+</body>
+</html>
